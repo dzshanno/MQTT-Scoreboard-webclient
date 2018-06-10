@@ -1,0 +1,384 @@
+<!-- 
+####################
+# SCOREBOARD WEB USER INTERFACE
+# Original project & source from Westbury on Severn Cricket Club - https://buildyourownscoreboard.wordpress.com/
+# and an update from bradford cricket club
+# now being updated for hockey by David Shannon
+#
+#
+# 10.6.18
+# replace save.txt with publish to MQTT broker
+# removed update delay as not needed for hockey
+#
+####################
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Wallingford Hockey CLub | Scoreboard</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/3-col-portfolio.css" rel="stylesheet">
+    <link href="css/sweetalert2.css" rel="stylesheet">
+    <link href="css/jquery.growl.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/font-awesome-animation.min.css">
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/sweetalert2.min.js"></script>
+    <script src="js/jquery.growl.js" type="text/javascript"></script>
+
+    // link to the MQTT javascript client library - downloaded and stored locally
+    <script src="js/paho-mqtt.js" type="text/javascript"></script>
+
+    <!-- Test Mode Script -->
+    <script src="js/testing.js"></script>
+    <!-- Battery Status Script -->
+    <script src="js/battery.js"></script>
+    <!-- Formatting Script -->
+    <script src="js/formatting.js"></script>
+    <!-- Admin Functions - Zero Everything, Restart, Shutdown, Help -->
+    <script src="js/admin.js"></script>
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+        // MQTT functions
+
+        //If the page fails to connect so a message in teh status bar and try again
+        function onFailure(message) {
+            console.log("Failed");
+            document.getElementById("status_messages").innerHTML = "Connection Failed- Retrying";
+            setTimeout(MQTTconnect, reconnectTimeout);
+        }
+
+        //If the page loses connection to the broker show a message in the page status bar
+        function onConnectionLost() {
+            console.log("connection lost");
+            document.getElementById("status").innerHTML = "Connection Lost";
+            document.getElementById("status_messages").innerHTML = "Connection Lost";
+            connected_flag = 0;
+        }
+
+        //When the page connects to the broker write a message to the log and the status bar
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            document.getElementById("status_messages").innerHTML = "Connected to " + host + "on port " + port;
+            connected_flag = 1;
+            document.getElementById("status").innerHTML = "Connected";
+            console.log("on Connect " + connected_flag);
+            // subscribe to topics
+            sub_topics();
+        }
+// this is called by the onSuccess method of the mqtt.connect - seems duplicative of Onconnect
+        function onConnected(recon,url){
+            console.log(" in onConnected " +recon);
+        }
+
+        function onMessageArrived(r_message){
+            // not yet handling message reciept in the browser
+
+            out_msg="Message received "+r_message.payloadString;
+
+            console.log(out_msg);
+        }
+
+
+        // called to gracefully disconnect from the MQTT broker
+        function disconnect() {
+            if (connected_flag == 1)
+                mqtt.disconnect();
+        }
+
+        function send_message(name,value){
+            document.getElementById("status_messages").innerHTML ="";
+            if (connected_flag==0){
+                out_msg="<b>Not Connected so can't send</b>"
+                console.log(out_msg);
+                document.getElementById("status_messages").innerHTML = out_msg;
+                return false;
+            }
+            var pqos=0;
+            var msg = name + ";" + value;
+            console.log(msg);
+            document.getElementById("status_messages").innerHTML="Sending message  "+msg;
+
+            //hardcode topic - check it is the same as for the subscribed topic
+            var topic = "scoreboard";
+
+            message = new Paho.MQTT.Message(msg);
+            if (topic=="")
+                message.destinationName = "test-topic";
+            else
+                message.destinationName = topic;
+            message.qos=pqos;
+            mqtt.send(message);
+            return false;
+        }
+
+        // called to connect to the MQTT broker
+        function MQTTconnect() {
+            //set server and port information directly rather than using fields on the form
+            var s="192.168.1.92";
+            var p="1884";
+
+
+            // document.getElementById("status_messages").innerHTML = "";
+            // var s = document.forms["connform"]["server"].value;
+            // var p = document.forms["connform"]["port"].value;
+            if (p != "") {
+                port = parseInt(p);
+            }
+            if (s != "") {
+                host = s;
+            }
+
+
+            document.getElementById("status_messages").innerHTML = 'connecting';
+            mqtt = new Paho.MQTT.Client(host, port, "clientjsaaa");
+            //document.write("connecting to "+ host);
+            var options = {
+                timeout: 3,
+                onSuccess: onConnect,
+                onFailure: onFailure,
+            };
+
+
+            mqtt.onConnectionLost = onConnectionLost;
+            mqtt.onMessageArrived = onMessageArrived;
+            mqtt.onConnected = onConnected;
+
+            mqtt.connect(options);
+            return false;
+        }
+
+        function sub_topics(){
+            document.getElementById("status_messages").innerHTML ="";
+            if (connected_flag==0){
+                out_msg="<b>Not Connected so can't subscribe</b>"
+                console.log(out_msg);
+                return false;
+            }
+            // set scorebard as ther MQTT topic rather than allowing any entry
+            var stopic= "scoreboard";
+            var sqos=0;
+            if (sqos>2)
+                sqos=0;
+            console.log("Subscribing to topic ="+stopic +" QOS " +sqos);
+            var soptions={
+                qos:sqos,
+            };
+            mqtt.subscribe(stopic,soptions);
+            return false;
+        }
+        // Initally set the scores to zero
+        var home_score = 0;
+        var away_score = 0;
+        var timer_value = new Date(0,0,0,0,0,0);
+
+
+
+        function home_change(amount) {
+            home_score = home_score + amount;
+            //send the MQTT message
+            send_message("homescore",home_score);
+            $('#home_count').html(home_score);
+        }
+
+        function away_change(amount) {
+            away_score = away_score + amount;
+            send_message("awayscore",away_score);
+            $('#away_count').html(away_score);
+        }
+
+        //T0DO fix when timer longer than 1 hour
+        function timer_change(amount) {
+            timer_value = new Date(timer_value.getTime() + amount);
+            send_message("timerset",timer_value);
+            timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
+            $('#timer_value').html(timer_display);
+
+        }
+
+        function timer_zero() {
+            timer_value = new Date(0,0,0,0,0,0);
+            send_message("timerset","0");
+            timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
+            $('#timer_value').html(timer_display);
+        }
+
+        function timer_start() {
+            send_message("timerstart","now");
+        }
+
+        function timer_pause() {
+            send_message("timerpause","now");
+        }
+
+        function message_change(msg) {
+            send_message("showmessage",msg);
+            $('#message_value').html(msg);
+        }
+
+        function message_clear() {
+            send_message("showmessage","");
+            $('#message_value').html("");
+        }
+
+        function show_clock() {
+            send_message("showclock","now");
+        }
+
+
+    </script>
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Wallingford Hockey Club Scoreboard</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav pull-right">
+                <li>
+                    <a href="javascript:admin_testmode();">Enter Test Mode</a>
+                </li>
+                <li>
+                    <a href="javascript:admin_zero();">Zero Everything</a>
+                </li>
+                <li>
+                    <a href="javascript:admin_restart();">Restart</a>
+                </li>
+                <li>
+                    <a href="javascript:admin_shutdown();">Shutdown</a>
+                </li>
+                <li>
+                    <a href="javascript:admin_help();">Help</a>
+                </li>
+                <li>
+                    <a id="battinfo">---</a>
+                </li>
+                <li>
+                    <a id="status">Status</a>
+                </li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<!-- Page Content -->
+<div class="container">
+
+    <div id="notification"></div>
+    <!-- Projects Row -->
+    <div class="row" align="center" align="center">
+        <div class="col-md-4 portfolio-item">
+
+            <h3>
+                Home score
+            </h3>
+            <p class="leddisplay" id="home_count">0</p>
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="javascript:home_change(1)" class="btn btn-secondary">+ 1</a>
+                <a href="javascript:home_change(-1)" class="btn btn-secondary">- 1</a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 portfolio-item">
+
+            <h3>
+                Away SCORE
+            </h3>
+            <p class="leddisplay" id="away_count">0</p>
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="javascript:away_change(1)" class="btn btn-secondary">+ 1</a>
+                <a href="javascript:away_change(-1)" class="btn btn-secondary">- 1</a>
+            </div>
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+    <!-- Projects Row -->
+    <div class="row" align="center">
+        <div class="col-md-4 portfolio-item">
+
+            <h3>
+                Timer
+            </h3>
+            <p class="leddisplay" id="timer_value">00:00</p>
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="javascript:timer_start()" class="btn btn-secondary">Start</a>
+                <a href="javascript:timer_pause()" class="btn btn-secondary">Pause</a>
+                <a href="javascript:timer_zero()" class="btn btn-secondary">Zero</a>
+                <a href="javascript:timer_change(60000)" class="btn btn-secondary">+1min</a>
+                <a href="javascript:timer_change(-60000)" class="btn btn-secondary">-1min</a>
+                <a href="javascript:timer_change(1000)" class="btn btn-secondary">+1sec</a>
+                <a href="javascript:timer_change(-1000)" class="btn btn-secondary">-1sec</a>
+                <a href="javascript:show_clock()" class="btn btn-secondary">clock</a>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 portfolio-item">
+
+            <h3>
+                MESSAGE
+            </h3>
+            <p class="leddisplay" id="message_value">Hello world</p>
+            <form action="javascript:message_change();" class="form-inline">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="message_setting" placeholder="New Message" required>
+                </div>
+                <input type="submit" class="btn btn-default" value="Set Message">
+                <a href="javascript:message_clear()" class = "btn btn-secondary">clear</a>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+</div>
+Status Messages:
+<div id="status_messages">
+</div>
+<!-- /.container -->
+
+<script>
+    $(document).ready(function () {
+        //connect to the MQTTbroker
+        MQTTconnect();
+
+
+    });
+</script>
+</body>
+
+</html>
