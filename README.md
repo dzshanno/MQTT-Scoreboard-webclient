@@ -9,4 +9,6 @@ Install Apache -  sudo apt-get install apache2 php libapache2-mod-php
 
 follow details here - https://buildyourownscoreboard.wordpress.com/setting-up-the-raspberry-jessie/
 
+git clone this repository into the webserver root
+
 
