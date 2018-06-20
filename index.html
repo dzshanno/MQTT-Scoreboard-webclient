@@ -204,14 +204,18 @@
             $('#away_count').html(away_score);
         }
 
-        //T0DO fix when timer longer than 1 hour
+       //T0DO fix when timer longer than 1 hour
         function timer_change(amount) {
             timer_value = new Date(timer_value.getTime() + amount);
-            send_message("timerset",timer_value);
+            timer_hours = timer_value.getHours()
+            timer_minutes = timer_value.getMinutes()
+            timer_seconds = timer_vlaue.getSeconds()
+            send_message("timerset",timer_hours + ":" + timer_minutes + ":" + timer_seconds)
             timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
             $('#timer_value').html(timer_display);
 
         }
+
 
         function timer_zero() {
             timer_value = new Date(0,0,0,0,0,0);
