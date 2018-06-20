@@ -207,10 +207,10 @@
        //T0DO fix when timer longer than 1 hour
         function timer_change(amount) {
             timer_value = new Date(timer_value.getTime() + amount);
-            timer_hours = timer_value.getHours()
-            timer_minutes = timer_value.getMinutes()
-            timer_seconds = timer_value.getSeconds()
-            send_message("timerset",timer_hours + ":" + timer_minutes + ":" + timer_seconds)
+            timer_hours = timer_value.getHours();
+            timer_minutes = timer_value.getMinutes();
+            timer_seconds = timer_value.getSeconds();
+            send_message("timerset",timer_hours + ":" + timer_minutes + ":" + timer_seconds);
             timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
             $('#timer_value').html(timer_display);
 
@@ -219,13 +219,17 @@
 
         function timer_zero() {
             timer_value = new Date(0,0,0,0,0,0);
-            send_message("timerset","0");
+            send_message("timerset","00:00:00");
             timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
             $('#timer_value').html(timer_display);
         }
 
         function timer_start() {
-            send_message("timerstart","now");
+            timer_hours = timer_value.getHours();
+            timer_minutes = timer_value.getMinutes();
+            timer_seconds = timer_value.getSeconds();
+            send_message("timerstart",timer_hours + ":" + timer_minutes + ":" + timer_seconds);
+
         }
 
         function timer_pause() {
