@@ -236,6 +236,10 @@
             send_message("timerpause","now");
         }
 
+        function timer_unpause() {
+            send_message("timerunpause","now");
+        }
+
         function message_change(msg) {
             send_message("showmessage",msg);
             $('#message_value').html(msg);
