@@ -241,12 +241,12 @@
         }
 
         function message_change(msg) {
-            send_message("showmessage",msg);
+            send_message("setmessage",msg);
             $('#message_value').html(msg);
         }
 
         function message_clear() {
-            send_message("showmessage","");
+            send_message("setmessage","");
             $('#message_value').html("");
         }
 
@@ -255,7 +255,23 @@
         }
 
         function hide_clock() {
-            send_message("hideclock","False");
+            send_message("showclock","False");
+        }
+
+        function show_timer() {
+            send_message("showtimer","True");
+        }
+
+        function hide_timer() {
+            send_message("showtimer","False");
+        }
+
+        function show_messgae() {
+            send_message("showmessage","True");
+        }
+
+        function hide_message() {
+            send_message("showmessage","False");
         }
 
 
@@ -359,8 +375,11 @@
                 <a href="javascript:timer_change(-60000)" class="btn btn-secondary">-1min</a>
                 <a href="javascript:timer_change(1000)" class="btn btn-secondary">+1sec</a>
                 <a href="javascript:timer_change(-1000)" class="btn btn-secondary">-1sec</a>
-                <a href="javascript:show_clock()" class="btn btn-secondary">clock</a>
+                <a href="javascript:show_clock()" class="btn btn-secondary">show clock</a>
                 <a href="javascript:hide_clock()" class="btn btn-secondary">hide clock</a>
+                <a href="javascript:show_timer()" class="btn btn-secondary">show timer</a>
+                <a href="javascript:hide_timer()" class="btn btn-secondary">hide timer</a>
+
 
             </div>
         </div>
@@ -377,6 +396,8 @@
                 </div>
                 <input type="submit" class="btn btn-default" value="Set Message">
                 <a href="javascript:message_clear()" class = "btn btn-secondary">clear</a>
+                <a href="javascript:show_messgae()" class="btn btn-secondary">show message</a>
+                <a href="javascript:hide_message()" class="btn btn-secondary">hide message</a>
             </form>
         </div>
     </div>
