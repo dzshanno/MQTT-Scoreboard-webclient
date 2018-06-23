@@ -219,7 +219,7 @@
 
         function timer_zero() {
             timer_value = new Date(0,0,0,0,0,0);
-            send_message("timerset","00:00:00");
+            send_message("settimer","00:33:00");
             timer_display = timer_value.toLocaleTimeString('en-US',{minute: 'numeric', second: 'numeric'});
             $('#timer_value').html(timer_display);
         }
@@ -228,12 +228,12 @@
             timer_hours = timer_value.getHours();
             timer_minutes = timer_value.getMinutes();
             timer_seconds = timer_value.getSeconds();
-            send_message("timerstart",timer_hours + ":" + timer_minutes + ":" + timer_seconds);
+            send_message("starttimer",timer_hours + ":" + timer_minutes + ":" + timer_seconds);
 
         }
 
         function timer_pause() {
-            send_message("timerpause","now");
+            send_message("pausetimer","now");
         }
 
         function timer_unpause() {
@@ -251,11 +251,11 @@
         }
 
         function show_clock() {
-            send_message("showclock","now");
+            send_message("showclock","True");
         }
 
         function hide_clock() {
-            send_message("hideclock","now");
+            send_message("hideclock","False");
         }
 
 
