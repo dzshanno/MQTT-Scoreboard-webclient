@@ -233,11 +233,11 @@
         }
 
         function timer_pause() {
-            send_message("pausetimer","now");
+            send_message("pausetimer","");
         }
 
         function timer_unpause() {
-            send_message("timerstart","now");
+            send_message("starttimer","");
         }
 
         function message_change(msg) {
