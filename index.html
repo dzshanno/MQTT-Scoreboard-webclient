@@ -189,6 +189,7 @@
         var away_score = 0;
         var timer_value = new Date(0,0,0,0,0,0);
         var message_value = "Wallingford HC"
+        var message_setting = "Wallingford HC"
 
 
 
@@ -242,8 +243,8 @@
         }
 
         function message_change() {
-            send_message("setmessage",message_value);
-            $('#message_value').html(message_value);
+            send_message("setmessage",message_setting);
+            $('#message_value').html(message_setting);
         }
 
         function message_clear() {
