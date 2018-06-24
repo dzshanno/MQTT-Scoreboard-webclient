@@ -188,6 +188,7 @@
         var home_score = 0;
         var away_score = 0;
         var timer_value = new Date(0,0,0,0,0,0);
+        var message_value = "Wallingford HC"
 
 
 
@@ -240,9 +241,9 @@
             send_message("starttimer","");
         }
 
-        function message_change(msg) {
-            send_message("setmessage",msg);
-            $('#message_value').html(msg);
+        function message_change() {
+            send_message("setmessage",message_value);
+            $('#message_value').html(message_value);
         }
 
         function message_clear() {
