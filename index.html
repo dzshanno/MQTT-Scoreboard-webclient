@@ -243,8 +243,9 @@
         }
 
         function message_change() {
-            send_message("setmessage",message_setting);
-            $('#message_value').html(message_setting);
+            message_value = document.getElementById("message_setting").innerHTML
+            send_message("setmessage",message_value);
+            $('#message_value').html(message_value);
         }
 
         function message_clear() {
