@@ -243,7 +243,7 @@
         }
 
         function message_change() {
-            message_value = document.getElementById("message_setting").innerHTML
+            message_value = document.getElementById("message_setting")
             send_message("setmessage",message_value);
             $('#message_value').html(message_value);
         }
