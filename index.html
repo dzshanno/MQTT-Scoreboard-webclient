@@ -196,12 +196,16 @@
         function home_change(amount) {
             home_score = home_score + amount;
             //send the MQTT message
+            if (home_score < 0)
+                home_score = 0;
             send_message("homescore",home_score);
             $('#home_count').html(home_score);
         }
 
         function away_change(amount) {
             away_score = away_score + amount;
+            if (away_score < 0)
+                away_score = 0;
             send_message("awayscore",away_score);
             $('#away_count').html(away_score);
         }
