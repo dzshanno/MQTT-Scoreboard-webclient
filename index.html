@@ -58,7 +58,7 @@
     <script>
         // MQTT functions
 
-        //If the page fails to connect so a message in teh status bar and try again
+        //If the page fails to connect show a message in the status bar and try again
         function onFailure(message) {
             console.log("Failed");
             document.getElementById("status_messages").innerHTML = "Connection Failed- Retrying";
